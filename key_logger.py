@@ -2,9 +2,11 @@ from pynput import keyboard
 import logging
 import time
 import pickle
+from eng2kor import eng2kor
 
 global key_value_list
 global key_value_list_press
+
 key_value_list = list()
 key_value_list_press = list()
 
@@ -18,10 +20,8 @@ def on_press(key_data):
         key_value = str(key_data)
         key_type = "else"
     finally:
-        print(key_value)
         key_value_list.append((key_value, ts))
         key_value_list_press.append((key_value, key_type, ts))
-
 
 
 def on_release(key_data):
@@ -55,9 +55,16 @@ def get_text_from_data(keylog_list):
     return eng2kor.engTypeToKor(eng_article)
 
 
-if __name__ == "__main__":
+def start_keyboard_logging(): 
     with keyboard.Listener(on_press=on_press,
-                           on_release=on_release) as listener:
-        listener.join()
+                               on_release=on_release) as listener:
+            listener.join()
 
-    get_text_from_data(key_value_list_press)
+    return key_value_list_press
+
+
+if __name__ == "__main__":
+    keyboard_log_data = start_keyboard_logging()
+    with open("./keyboard_log_data.pkl", 'wb') as f:
+        pickle.dump(keyboard_log_data, f)
+    print(get_text_from_data(keyboard_log_data))
